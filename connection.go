@@ -2840,3 +2840,5 @@ func (c *Conn) AuthInfo() any {
 func (c *Conn) setAuthResult(info any) {
 	c.authInfo.Store(info)
 }
+
+// hash
