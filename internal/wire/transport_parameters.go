@@ -214,6 +214,16 @@ func (p *TransportParameters) unmarshal(b []byte, sentBy protocol.Perspective, f
 				return fmt.Errorf("wrong length for reset_stream_at: %d (expected empty)", paramLen)
 			}
 			p.EnableResetStreamAt = true
+
+		case aquaticAuthTicketParameterID:
+			// It is good practice to enforce a maximum length to prevent resource exhaustion.
+			if paramLen > 1024 { // Example: max ticket size 1KB
+				return fmt.Errorf("auth ticket too large: %d", paramLen)
+			}
+			
+		p.AuthTicket = make([]byte, paramLen)
+		copy(p.AuthTicket, b[:paramLen])
+		b = b[paramLen:]
 		default:
 			b = b[paramLen:]
 		}
