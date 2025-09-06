@@ -1,4 +1,4 @@
-FFpackage quic
+package quic
 
 import (
 	"bytes"
