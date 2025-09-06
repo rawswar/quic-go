@@ -50,6 +50,8 @@ const (
 	resetStreamAtParameterID transportParameterID = 0x17f7586d2cb571
 	// https://datatracker.ietf.org/doc/draft-ietf-quic-ack-frequency/11/
 	minAckDelayParameterID transportParameterID = 0xff04de1b
+    aquaticAuthTicketParameterID transportParameterID = 0xAQ71C
+
 )
 
 // PreferredAddress is the value encoding in the preferred_address transport parameter
@@ -90,6 +92,8 @@ type TransportParameters struct {
 	MaxDatagramFrameSize protocol.ByteCount // RFC 9221
 	EnableResetStreamAt  bool               // https://datatracker.ietf.org/doc/draft-ietf-quic-reliable-stream-reset/06/
 	MinAckDelay          *time.Duration
+    AuthTicket           []byte
+
 }
 
 // Unmarshal the transport parameters
