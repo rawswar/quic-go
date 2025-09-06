@@ -190,6 +190,14 @@ type Config struct {
 	// See https://datatracker.ietf.org/doc/html/draft-ietf-quic-reliable-stream-reset-07.
 	EnableStreamResetPartialDelivery bool
 	Tracer                           func(context.Context, logging.Perspective, ConnectionID) *logging.ConnectionTracer
+
+	// AQUATIC-FORK-MODIFICATION-START
+	// AuthTicket contains a ticket to be sent in a custom transport parameter
+	// for early-stage authentication. This is a non-standard feature.
+	// On the client, its content will be sent to the server.
+	// The server can then perform validation before completing the handshake.
+	AuthTicket []byte
+	// AQUATIC-FORK-MODIFICATION-END
 }
 
 // ClientHelloInfo contains information about an incoming connection attempt.
