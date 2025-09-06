@@ -203,6 +203,8 @@ type Conn struct {
 	logID  string
 	tracer *logging.ConnectionTracer
 	logger utils.Logger
+	
+	authInfo atomic.Value
 }
 
 var _ streamSender = &Conn{}
@@ -2782,4 +2784,19 @@ func (c *Conn) NextConnection(ctx context.Context) (*Conn, error) {
 // connection ID length), and the size of the encryption tag.
 func estimateMaxPayloadSize(mtu protocol.ByteCount) protocol.ByteCount {
 	return mtu - 1 /* type byte */ - 20 /* maximum connection ID length */ - 16 /* tag size */
+}
+
+// AuthInfo returns the application-specific authentication information
+// associated with the connection, as determined during the handshake.
+// Returns nil if authentication was not performed or failed.
+// The returned value can be safely type-asserted to the specific
+// user info struct defined in the application.
+func (c *Conn) AuthInfo() any {
+	return c.authInfo.Load()
+}
+
+// setAuthResult atomically stores the authentication result.
+// This method is for internal use by the handshake logic.
+func (c *Conn) setAuthResult(info any) {
+	c.authInfo.Store(info)
 }
