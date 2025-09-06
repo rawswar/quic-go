@@ -13,7 +13,3 @@ Please **DO NOT file a public issue**.
 
 If the issue is an implementation weakness that cannot be immediately exploited or
 something not yet deployed, just discuss it openly.
-
-## Reporting a non security bug
-
-For non-security bugs, please simply file a GitHub [issue](https://github.com/quic-go/quic-go/issues/new).
