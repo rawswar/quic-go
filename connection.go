@@ -1,4 +1,4 @@
-package quic
+FFpackage quic
 
 import (
 	"bytes"
@@ -2016,6 +2016,7 @@ func (c *Conn) restoreTransportParameters(params *wire.TransportParameters) {
 	c.connStateMutex.Unlock()
 }
 
+
 func (c *Conn) handleTransportParameters(params *wire.TransportParameters) error {
 	if c.tracer != nil && c.tracer.ReceivedTransportParameters != nil {
 		c.tracer.ReceivedTransportParameters(params)
@@ -2033,6 +2034,45 @@ func (c *Conn) handleTransportParameters(params *wire.TransportParameters) error
 			ErrorMessage: "server sent reduced limits after accepting 0-RTT data",
 		}
 	}
+
+	// AQUATIC-FORK-MODIFICATION-START
+	// This is the main hook for the aquatic authentication protocol.
+	// It is executed on the server after receiving the client's transport parameters.
+	if c.perspective == protocol.PerspectiveServer {
+		// Define your application-level verification logic here.
+		// This should be a placeholder for a call to your application's logic.
+		verifyTicket := func(ticket []byte) (userInfo any, ok bool) {
+			// In a real implementation, you would call your aquatic auth logic.
+			// For example:
+			// return aquatic.Validator.Verify(ticket)
+
+			// Placeholder logic for demonstration: ticket is valid if it starts with 'V'.
+			if len(ticket) > 0 && ticket[0] == 'V' {
+				// On success, return a user info object and true.
+				return fmt.Sprintf("authenticated-user-from-ticket-%s", string(ticket[1:])), true
+			}
+			// On failure, return nil and false.
+			return nil, false
+		}
+
+		userInfo, ok := verifyTicket(params.AuthTicket)
+		if !ok {
+			// **SILENT DROP IMPLEMENTATION**
+			// Authentication failed. Immediately destroy the connection state
+			// without sending any response to the client.
+			authErr := errors.New("aquatic: auth ticket validation failed")
+			c.destroyImpl(authErr)
+			// Return a transport error to stop processing this handshake path.
+			// The connection is already being destroyed, so no CONNECTION_CLOSE will be sent.
+			return &qerr.TransportError{ErrorCode: qerr.ProtocolViolation, ErrorMessage: "invalid auth ticket"}
+		}
+
+		// **CONTEXT ATTACHMENT IMPLEMENTATION**
+		// Authentication succeeded. Attach the user info to the connection.
+		c.setAuthResult(userInfo)
+		c.logger.Debugf("Successfully authenticated client via AuthTicket. User: %v", userInfo)
+	}
+	// AQUATIC-FORK-MODIFICATION-END
 
 	c.peerParams = params
 	// On the client side we have to wait for handshake completion.
